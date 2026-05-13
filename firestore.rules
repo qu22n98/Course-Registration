@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isAdmin() {
+      return request.auth != null && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email == 'qu22n98@gmail.com' && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isValidRegistration(data) {
+      return data.keys().hasAll(['name', 'employeeId', 'email', 'courseId', 'courseName', 'createdAt'])
+        && data.keys().size() >= 6
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.employeeId is string && data.employeeId.size() > 0 && data.employeeId.size() <= 100
+        && data.email is string && data.email.size() > 0 && data.email.size() <= 200
+        && data.courseId is string
+        && data.courseName is string
+        && (data.createdAt == request.time || data.createdAt is timestamp);
+    }
+
+    match /registrations/{registrationId} {
+      // Allow anyone to create a registration
+      allow create: if isValidRegistration(incoming());
+      
+      // Only admins can read registrations
+      allow list, get: if isAdmin(); 
+      
+      // Prevent updates and deletes from the client for security
+      allow update, delete: if false;
+    }
+
+    match /admins/{userId} {
+      allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+  }
+}

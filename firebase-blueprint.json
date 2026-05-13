@@ -1,0 +1,36 @@
+{
+  "entities": {
+    "Registration": {
+      "title": "Registration",
+      "description": "Information provided by course applicants.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Applicant Name" },
+        "employeeId": { "type": "string", "description": "Employee ID" },
+        "email": { "type": "string", "format": "email", "description": "Applicant Email" },
+        "courseId": { "type": "string", "description": "Selected Course ID" },
+        "courseName": { "type": "string", "description": "Selected Course Name" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Submission time" }
+      },
+      "required": ["name", "employeeId", "email", "courseId", "courseName", "createdAt"]
+    }
+  },
+  "firestore": {
+    "registrations": {
+      "schema": "Registration",
+      "description": "Collection of course registrations"
+    },
+    "admins": {
+      "schema": {
+        "title": "AdminUser",
+        "description": "Authorized administrators.",
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "format": "email", "description": "Admin Email" }
+        },
+        "required": ["email"]
+      },
+      "description": "Collection of authorized administrators"
+    }
+  }
+}
